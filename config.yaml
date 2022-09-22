@@ -1,0 +1,37 @@
+sample_rate: 44_100
+
+mel_spectrogram:
+  # source:
+  # 3.1. Feature Extraction
+  # https://arxiv.org/pdf/2106.01621v7.pdf 
+  win_length: 0.031
+  hop_length: 0.008
+  n_mels: 128
+  f_min: 30
+  f_max: 14_000
+
+augmentation: 
+  reverb:
+    p: 0.5
+  time_shift:
+    p: 0.5
+  noise:
+    min_snr_db: 30
+    max_snr_db: 1
+    p: 0.5
+  
+  dropblock:
+    p: 0.5
+    block_size:
+      t: 16
+      f: 4
+      
+  time_masking:
+    p: 0.5
+    tmp: 20
+    num: 6
+
+  freq_masking:
+    p: 0.5
+    fmp: 5
+    num: 5

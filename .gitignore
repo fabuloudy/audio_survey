@@ -1,0 +1,9 @@
+*.wav
+data/ESC-50
+data/UrbanSound8k
+data/*_converted
+
+!data/RIR/*.wav
+
+__pycache__
+.ipynb_checkpoints
