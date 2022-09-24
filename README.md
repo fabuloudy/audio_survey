@@ -22,8 +22,25 @@ This dataset contains **8732** labeled environmental sound excerpts (<=**4s**) o
 
 ## Setup 🔨
 
+#### Config
+
+sample_rate - project sasmple rate, default 44_100
+mel_spectrogram - dict with argumetns for `torchaudio.transforms.MelSpectrogram` class. Default param: [1] 3.1. Feature Extraction
+    win_length - Window size in sec, calculated by sample_rate
+    hop_length - Length of hop between STFT windows in sec, calculated by sample_rate
+    n_mels - Number of mel filterbanks
+    f_min - Minimum frequency
+    f_max - Maximum frequency
 ...
+
+
+## My specs
+
+RAM: 16GB
+GPU: 1660super 6GB
+CPU: i5-11400F
 
 ## References
 
 1. ERANNs: Efficient Residual Audio Neural Networks for Audio Pattern Recognition. `Sergey Verbitskiy`, `Vladimir Berikov`, `Viacheslav Vyshegorodtsev`. [arxiv abs](https://arxiv.org/abs/2106.01621v7)
+2. PANNs: Large-Scale Pretrained Audio Neural Networks for Audio Pattern Recognition. `Qiuqiang Kong`, `Yin Cao`, `Turab Iqbal`, `Yuxuan Wang`, `Wenwu Wang`, `Mark D. Plumbley`. [arxiv abs](https://arxiv.org/abs/1912.10211)
