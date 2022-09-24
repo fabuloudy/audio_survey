@@ -1,7 +1,11 @@
 *.wav
+*.bat
+*.torch
 data/ESC-50
 data/UrbanSound8k
 data/*_converted
+logs/fit/esc50
+.VSCodeCounter
 
 !data/RIR/*.wav
 
