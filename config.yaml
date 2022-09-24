@@ -1,9 +1,7 @@
 sample_rate: 44_100
 
 mel_spectrogram:
-  # source:
-  # 3.1. Feature Extraction
-  # https://arxiv.org/pdf/2106.01621v7.pdf 
+  # source: [1] 3.1. Feature Extraction
   win_length: 0.031
   hop_length: 0.008
   n_mels: 128
@@ -12,26 +10,74 @@ mel_spectrogram:
 
 augmentation: 
   reverb:
-    p: 0.5
+    p: 0.
   time_shift:
     p: 0.5
   noise:
     min_snr_db: 30
     max_snr_db: 1
     p: 0.5
-  
   dropblock:
     p: 0.5
     block_size:
       t: 16
       f: 4
-      
   time_masking:
-    p: 0.5
     tmp: 20
     num: 6
-
-  freq_masking:
     p: 0.5
+  freq_masking:
     fmp: 5
     num: 5
+    p: 0.5
+
+train:
+  patience: 10
+  batch_size: 64
+  accum_iter: 5
+  grad_clip: 2.
+
+model:
+  # `res` block list:
+  # filters_num_1, filters_num_2
+
+  # `max_pool` list:
+  # kernel_size over T, stride over T
+
+  # `drop` list:
+  # prob, block_size over T, block_size over F
+
+  # 'fc' number:
+  # out_features
+  use_checkpoint: false
+  res_block:
+    activation: gelu
+    batch_first: true
+    kernel_size: [5, 5]
+    kernel_size_res: [2, 2]
+
+  blocks:
+    - res: [2, 4]
+    - max_pool: [2, 2]
+    - res: [8, 16]
+    - max_pool: [2, 2]
+    
+    - drop: [0.2, 4, 4]
+    - res: [32, 64]
+    - max_pool: [2, 2]
+    - activation: swiglu
+
+    - drop: [0.2, 4, 2]
+    - res: [64, 32]
+    - max_pool: [2, 2]
+    - res: [32, 32]
+    - activation: swiglu
+    
+    - res: [32, 16]
+    - pooling:
+        mode: sum
+        flat: true
+
+    - fc: 128
+    - activation: gelu
+    - fc: 64
