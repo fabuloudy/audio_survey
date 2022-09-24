@@ -1,7 +1,6 @@
 """Scpectogram-based augmentations and tools"""
 
 import random
-from re import A
 
 import torch
 import torch.nn.functional as F
@@ -52,6 +51,23 @@ class TimeMasking(SpecAug, BatchAug):
 
 
 class DropBlock2D(SpecAug, BatchAug):
+    r"""Randomly zeroes 2D spatial blocks of the input tensor.
+    As described in the paper
+    `DropBlock: A regularization method for convolutional networks`_ ,
+    dropping whole blocks of feature map allows to remove semantic
+    information as compared to regular dropout.
+    Args:
+        drop_prob (float): probability of an element to be dropped.
+        block_size (int): size of the block to drop
+    Shape:
+        - Input: `(N, C, H, W)`
+        - Output: `(N, C, H, W)`
+    .. _DropBlock: A regularization method for convolutional networks:
+       https://arxiv.org/abs/1810.12890
+
+    source: https://github.com/miguelvr/dropblock/blob/master/dropblock/dropblock.py
+    """
+
     def __init__(self, drop_prob, block_size: tuple|list|int):
         self.drop_prob = drop_prob
         if isinstance(block_size, int):

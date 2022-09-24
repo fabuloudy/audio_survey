@@ -9,6 +9,7 @@ import torch.nn.functional as F
 import pandas as pd
 
 from .tools import ConfigBase
+from .augmentation import spec, wave
 from .augmentation.typing import WaveAug, SpecAug, BatchAug, Aug
 
 
@@ -23,10 +24,36 @@ class AudioDataset(ConfigBase, torch.utils.data.Dataset):
         self.wave_transforms: list[WaveAug|BatchAug]
         self.spec_transforms: list[SpecAug|BatchAug]
 
-        config = self._get_config()
-        self.sample_rate = config['sample_rate']
+        self.config = self._get_config()
+        self.sample_rate = self.config['sample_rate']
 
-        config = config['mel_spectrogram']
+        config = self.config['augmentation']
+        self.wave_transforms = [
+            wave.RIR(self.sample_rate, **config['reverb']),
+            wave.TimeShift(None, **config['time_shift']),
+            wave.AdditiveUN(**config['noise'])
+        ]
+        self.spec_transforms = [
+            spec.DropBlock2D(
+                config['dropblock']['p'], 
+                [
+                config['dropblock']['block_size']['t'], 
+                config['dropblock']['block_size']['f']
+                ]
+            ),
+            spec.TimeMasking(
+                config['time_masking']['tmp'], 
+                config['time_masking']['num'], 
+                config['time_masking']['p']
+            ),
+            spec.FrequencyMasking(
+                config['freq_masking']['fmp'], 
+                config['freq_masking']['num'], 
+                config['freq_masking']['p']
+            ),
+        ]
+
+        config = self.config['mel_spectrogram']
         self.mel_spec = torchaudio.transforms.MelSpectrogram(
             sample_rate=self.sample_rate, 
             n_fft=int(self.sample_rate*config['win_length']),
@@ -99,25 +126,34 @@ class AudioDataset(ConfigBase, torch.utils.data.Dataset):
         Optimally applies batch augmentation and other things
 
         batch: list of batch size with 2 items in each: x, y
+
+        - Output Shape: `(B, C, T, F)`
+            where B - batch size, C - channel number == 1, T - temporal size, F - frequency size
+
         
         """
         x, y = [x[0] for x in batch], [x[1] for x in batch]
-        y = torch.IntTensor(y)
+        y = torch.LongTensor(y)
 
         # ---------------------------------------------------------------------- #
         x = [self.apply_augs(_x, self.wave_transforms, batch=False) for _x in x]
 
         x = torch.vstack(x)
         x = self.apply_augs(x, self.wave_transforms, batch=True) 
-        wave = self.normalize(x)
+        x = self.normalize(x)
 
         # ---------------------------------------------------------------------- #
-        x = [self.convert_to_mel_spec(_x).unsqueeze(0) for _x in wave]
+        x = [self.convert_to_mel_spec(_x).unsqueeze(0) for _x in x]
         x = [self.apply_augs(_x, self.spec_transforms, batch=False) for _x in x]
         x = torch.vstack(x)
         x = x.unsqueeze(1)
         x = self.apply_augs(x, self.spec_transforms, batch=True) 
-        return x, wave, y
+
+        # If odd - add one empty vector to F-dim
+        if x.shape[-1]%2 == 1:
+            x = F.pad(x, (1, 0, 0, 0))
+
+        return x, y
 
     def apply_augs(self, x: torch.Tensor, transforms: list[Aug], batch=False):
         if transforms is not None:
@@ -126,16 +162,13 @@ class AudioDataset(ConfigBase, torch.utils.data.Dataset):
                     x = transform(x)
         return x
 
+
 class ESCDataset(AudioDataset):
-    def __init__(self, 
-        audio_length:int, folds:list[int], 
-        wave_transforms:list[WaveAug]=None, spec_transforms:list[SpecAug]=None):
+    def __init__(self, audio_length:int, folds:list[int]):
         super().__init__()
 
         self.folds = folds
         self.audio_length = audio_length
-        self.wave_transforms = wave_transforms
-        self.spec_transforms = spec_transforms
 
         root = self._get_relative_path(__file__)
         root = root.parent / 'data/ESC-50'
@@ -149,15 +182,11 @@ class ESCDataset(AudioDataset):
         
 
 class UrbanDataset(AudioDataset):
-    def __init__(self, 
-        audio_length:int, folds:list[int], 
-        wave_transforms:list[WaveAug]=None, spec_transforms:list[SpecAug]=None):
+    def __init__(self, audio_length:int, folds:list[int]):
         super().__init__()
+
         self.folds = folds
         self.audio_length = audio_length
-        self.wave_transforms = wave_transforms
-        self.spec_transforms = spec_transforms
-
 
         root = self._get_relative_path(__file__)
         root = root.parent / 'data'
