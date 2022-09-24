@@ -24,7 +24,7 @@ This dataset contains **8732** labeled environmental sound excerpts (<=**4s**) o
 
 #### Config
 
-sample_rate - project sasmple rate, default 44_100
+sample_rate - project sasmple rate, default 44_100  
 mel_spectrogram - dict with argumetns for `torchaudio.transforms.MelSpectrogram` class. Default param: [1] 3.1. Feature Extraction  
 * win_length - Window size in sec, calculated by sample_rate  
 * hop_length - Length of hop between STFT windows in sec, calculated by sample_rate  
