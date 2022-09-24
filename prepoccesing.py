@@ -2,7 +2,7 @@ import glob
 import yaml
 import tqdm 
 import pathlib
-
+from contextlib import suppress
 
 import librosa
 import torch
@@ -35,9 +35,10 @@ if __name__ == "__main__":
             config = yaml.safe_load(stream)
 
     sample_rate = config['sample_rate']
-    
-    path = pathlib.Path('data/UrbanSound8K/')
-    convert(path, sample_rate=sample_rate, pattern="**/*.wav")
+
+    with suppress(Exception):
+        path = pathlib.Path('data/UrbanSound8K/')
+        convert(path, sample_rate=sample_rate, pattern="**/*.wav")
 
     path = pathlib.Path('data/ESC-50/audio/')
     convert(path, sample_rate=sample_rate, pattern="*.wav")
