@@ -165,3 +165,25 @@ class AdditiveUN(WaveAug):
 
     def __str__(self):
         return f'AdditiveUN | min_snr_db={self.min_snr_db} | max_snr_db={self.max_snr_db} | p={self.p}'
+
+
+class Distortion(WaveAug):
+    def __init__(self, min_snr_db=30, max_snr_db=10, p=0.5):
+        raise NotImplementedError
+        assert 0 <= p <= 1
+        self.min_snr_db = min_snr_db
+        self.max_snr_db = max_snr_db
+        self.p = p
+
+    def __call__(self, audio: torch.Tensor, p=None):
+        raise NotImplementedError
+        assert len(audio.shape) == 1
+        if p is None: p = self.p
+
+        if random.random() < p:
+            pass
+
+        return audio
+
+    def __str__(self):
+        return f'Distortion | min_snr_db={self.min_snr_db} | max_snr_db={self.max_snr_db} | p={self.p}'
