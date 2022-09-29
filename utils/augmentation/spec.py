@@ -68,7 +68,8 @@ class DropBlock2D(SpecAug, BatchAug):
     source: https://github.com/miguelvr/dropblock/blob/master/dropblock/dropblock.py
     """
 
-    def __init__(self, drop_prob, block_size: tuple|list|int):
+    def __init__(self, p:float, drop_prob:float, block_size: tuple|list|int):
+        self.p = p
         self.drop_prob = drop_prob
         if isinstance(block_size, int):
             self.block_size = (block_size, block_size)
@@ -78,30 +79,34 @@ class DropBlock2D(SpecAug, BatchAug):
 
         self.gamma = self.drop_prob / (sum(self.block_size)/2)**2
 
-    def __call__(self, x: torch.Tensor):
+    def __call__(self, x: torch.Tensor, p:float=None):
         # shape: (bsize, channels, height, width)
         assert x.dim() == 4, \
             "Expected input with 4 dimensions (bsize, channels, height, width)"
 
+        if p is None: p = self.p
+        if random.random() > p: 
+            return x
+
         if self.drop_prob == 0.:
             return x
-        else:
-            # sample mask
-            mask = (torch.rand(x.shape[0], *x.shape[2:]) < self.gamma).float()
 
-            # place mask on input device
-            mask = mask.to(x.device)
+        # sample mask
+        mask = (torch.rand(x.shape[0], *x.shape[2:]) < self.gamma).float()
 
-            # compute block mask
-            block_mask = self._compute_block_mask(mask)
+        # place mask on input device
+        mask = mask.to(x.device)
 
-            # apply block mask
-            out = x * block_mask[:, None, :, :]
+        # compute block mask
+        block_mask = self._compute_block_mask(mask)
 
-            # scale output
-            out = out * block_mask.numel() / block_mask.sum()
+        # apply block mask
+        out = x * block_mask[:, None, :, :]
 
-            return out
+        # scale output
+        out = out * block_mask.numel() / block_mask.sum()
+
+        return out
 
     def _compute_block_mask(self, mask: torch.Tensor):
         block_mask = F.max_pool2d(
