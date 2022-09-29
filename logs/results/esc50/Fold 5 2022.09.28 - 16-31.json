@@ -1,0 +1,242 @@
+{
+  "config": {
+    "sample_rate": 30000,
+    "mel_spectrogram": {
+      "win_length": 0.031,
+      "hop_length": 0.008,
+      "n_mels": 128,
+      "f_min": 30,
+      "f_max": 14000
+    },
+    "augmentation": {
+      "reverb": {
+        "p": 0.0
+      },
+      "time_shift": {
+        "p": 0.25
+      },
+      "noise": {
+        "min_snr_db": 30,
+        "max_snr_db": 1,
+        "p": 0.25
+      },
+      "dropblock": {
+        "p": 0.25,
+        "dp": 0.5,
+        "block_size": {
+          "t": 32,
+          "f": 4
+        }
+      },
+      "time_masking": {
+        "tmp": 20,
+        "num": 6,
+        "p": 0.25
+      },
+      "freq_masking": {
+        "fmp": 5,
+        "num": 5,
+        "p": 0.25
+      }
+    },
+    "pretrain_urban": false,
+    "pretrain": {
+      "num_workers": 2,
+      "epochs": 0,
+      "patience": 35,
+      "lr": 0.001,
+      "weight_decay": 0.1,
+      "batch_size": 16,
+      "accum_iter": 4,
+      "grad_clip_value": 0.0,
+      "grad_clip_norm": 2.0,
+      "use_checkpoint": false
+    },
+    "train": {
+      "num_workers": 2,
+      "patience": 35,
+      "lr": 0.0003,
+      "weight_decay": 0.01,
+      "batch_size": 16,
+      "accum_iter": 4,
+      "grad_clip_value": 0.0,
+      "grad_clip_norm": 2.0,
+      "use_checkpoint": false
+    },
+    "model": {
+      "res_block": {
+        "activation": "gelu",
+        "batch_first": true,
+        "kernel_size": [
+          5,
+          5
+        ],
+        "kernel_size_res": [
+          2,
+          2
+        ]
+      },
+      "blocks": [
+        {
+          "res": [
+            16,
+            32
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "activation": "swiglu"
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            8,
+            4
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            32,
+            64
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            4,
+            2
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            64,
+            128
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "activation": "swiglu"
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            2,
+            2
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            256,
+            256
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "res": [
+            64,
+            32
+          ]
+        },
+        {
+          "res": [
+            16,
+            8
+          ]
+        },
+        {
+          "pooling": {
+            "mode": "avg",
+            "flat": true
+          }
+        },
+        {
+          "fc": 128
+        },
+        {
+          "activation": "gelu"
+        },
+        {
+          "fc": 64
+        },
+        {
+          "activation": "gelu"
+        }
+      ]
+    }
+  },
+  "results": {
+    "1": [
+      "esc50/Fold 1 2022.09.28 - 16-31",
+      {
+        "Acc": 0.5600000023841858,
+        "Acc3": 0.7649999856948853,
+        "AUC": 0.9586926102638245
+      }
+    ],
+    "2": [
+      "esc50/Fold 2 2022.09.28 - 16-31",
+      {
+        "Acc": 0.4925000071525574,
+        "Acc3": 0.6875,
+        "AUC": 0.9335777163505554
+      }
+    ],
+    "3": [
+      "esc50/Fold 3 2022.09.28 - 16-31",
+      {
+        "Acc": 0.5174999833106995,
+        "Acc3": 0.7475000023841858,
+        "AUC": 0.9507142901420593
+      }
+    ],
+    "4": [
+      "esc50/Fold 4 2022.09.28 - 16-31",
+      {
+        "Acc": 0.5475000143051147,
+        "Acc3": 0.7549999952316284,
+        "AUC": 0.9566517472267151
+      }
+    ],
+    "5": [
+      "esc50/Fold 5 2022.09.28 - 16-31",
+      {
+        "Acc": 0.5224999785423279,
+        "Acc3": 0.6825000047683716,
+        "AUC": 0.946473240852356
+      }
+    ]
+  }
+}

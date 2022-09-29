@@ -1,0 +1,205 @@
+{
+  "config": {
+    "sample_rate": 30000,
+    "mel_spectrogram": {
+      "win_length": 0.031,
+      "hop_length": 0.008,
+      "n_mels": 128,
+      "f_min": 30,
+      "f_max": 14000
+    },
+    "augmentation": {
+      "reverb": {
+        "p": 0.0
+      },
+      "time_shift": {
+        "p": 0.25
+      },
+      "noise": {
+        "min_snr_db": 30,
+        "max_snr_db": 1,
+        "p": 0.25
+      },
+      "dropblock": {
+        "p": 0.25,
+        "dp": 0.5,
+        "block_size": {
+          "t": 32,
+          "f": 4
+        }
+      },
+      "time_masking": {
+        "tmp": 20,
+        "num": 6,
+        "p": 0.25
+      },
+      "freq_masking": {
+        "fmp": 5,
+        "num": 5,
+        "p": 0.25
+      }
+    },
+    "pretrain_urban": true,
+    "pretrain": {
+      "num_workers": 2,
+      "epochs": 0,
+      "patience": 35,
+      "lr": 0.001,
+      "weight_decay": 0.1,
+      "batch_size": 16,
+      "accum_iter": 4,
+      "grad_clip_value": 0.0,
+      "grad_clip_norm": 2.0,
+      "use_checkpoint": false
+    },
+    "train": {
+      "num_workers": 2,
+      "patience": 35,
+      "lr": 0.0001,
+      "weight_decay": 0.01,
+      "batch_size": 16,
+      "accum_iter": 4,
+      "grad_clip_value": 0.0,
+      "grad_clip_norm": 2.0,
+      "use_checkpoint": false
+    },
+    "model": {
+      "res_block": {
+        "activation": "gelu",
+        "batch_first": true,
+        "kernel_size": [
+          5,
+          5
+        ],
+        "kernel_size_res": [
+          2,
+          2
+        ]
+      },
+      "blocks": [
+        {
+          "res": [
+            16,
+            32
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "activation": "swiglu"
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            8,
+            4
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            32,
+            64
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            4,
+            2
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            64,
+            128
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "activation": "swiglu"
+        },
+        {
+          "drop": [
+            0.25,
+            0.25,
+            2,
+            2
+          ]
+        },
+        {
+          "dropout": 0.15
+        },
+        {
+          "res": [
+            256,
+            256
+          ]
+        },
+        {
+          "max_pool": [
+            2,
+            2
+          ]
+        },
+        {
+          "res": [
+            64,
+            32
+          ]
+        },
+        {
+          "res": [
+            16,
+            8
+          ]
+        },
+        {
+          "pooling": {
+            "mode": "avg",
+            "flat": true
+          }
+        },
+        {
+          "fc": 128
+        },
+        {
+          "activation": "gelu"
+        },
+        {
+          "fc": 64
+        },
+        {
+          "activation": "gelu"
+        }
+      ]
+    }
+  },
+  "results": {
+    "Acc": 0.6536058783531189,
+    "Acc3": 0.8461101651191711,
+    "AUC": 0.9238618612289429
+  }
+}
