@@ -1,3 +1,5 @@
+# Скрипт конвертирует все датасеты и аудио до частоты дискретизации указанной в конфиге
+
 import glob
 import yaml
 import tqdm 
@@ -10,6 +12,7 @@ import torchaudio
 
 
 def convert(path: pathlib.Path, sample_rate:int, pattern:str):
+    """Конвертирует все аудио до нужной частоты дискретизации"""
     output_path = path.parent / (path.stem + '_converted')
     output_path.mkdir(parents=True, exist_ok=True)
 

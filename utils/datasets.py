@@ -168,8 +168,19 @@ class AudioDataset(ConfigBase, torch.utils.data.Dataset):
 
         - Output Shape: `(B, C, T, F)`
             where B - batch size, C - channel number == 1, T - temporal size, F - frequency size
+        - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        Формирует батч
 
-        
+        Объединяет список семплов и формирует мини батч.
+        Оптимально применяет аугментацию и другие штучки
+
+        batch: список размером с батч и двумя элементами в каждом: x, y
+
+        - Выходная размерность: `(B, C, T, F)`
+            где B - размер батча, C - количество каналов, равно единице, 
+            T - временной размер (зависит от длины аудио), 
+            F - частотный размер, зависит от параметров алгоритма мел
+
         """
         x, y = [x[0] for x in batch], [x[1] for x in batch]
         # ---------------------------------------------------------------------- #
@@ -198,6 +209,7 @@ class AudioDataset(ConfigBase, torch.utils.data.Dataset):
         x = self.apply_augs(x, self.spec_transforms, batch=True) 
 
         # If odd - add one empty vector to F-dim
+        # Если нечётное - добавляет одно пустое измерение по оси F
         if x.shape[-1]%2 == 1:
             x = F.pad(x, (1, 0, 0, 0))
 
